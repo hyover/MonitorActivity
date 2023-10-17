@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="aiguille_small.png" />
+    <None Remove="compteur_small.png" />
+    <None Remove="download.png" />
+    <None Remove="upload.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibreHardwareMonitorLibCore" Version="1.0.3" />
+    <PackageReference Include="System.Management" Version="7.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="aiguille_small.png" />
+    <Resource Include="compteur_small.png" />
+    <Resource Include="download.png" />
+    <Resource Include="upload.png" />
+  </ItemGroup>
+
+</Project>

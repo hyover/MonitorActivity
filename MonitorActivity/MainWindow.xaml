@@ -1,0 +1,92 @@
+﻿<Window x:Class="MonitorActivity.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MonitorActivity"
+        mc:Ignorable="d"
+        Title="Moniteur d'activité" Height="600" Width="900" ResizeMode="NoResize">
+    <Grid Background="#33002233">
+
+        <Rectangle HorizontalAlignment="Center" Height="38" Margin="0,1,0,0" VerticalAlignment="Top" Width="900" Fill="#FFFF4740"/>
+        <Rectangle HorizontalAlignment="Center" Height="88" Stroke="Black" VerticalAlignment="Top" Width="880" Margin="0,104,0,0"/>
+        <Rectangle HorizontalAlignment="Left" Height="307" Margin="10,210,0,0" Stroke="Black" VerticalAlignment="Top" Width="260"/>
+        <Rectangle HorizontalAlignment="Center" Height="307" Margin="0,210,0,0" Stroke="Black" VerticalAlignment="Top" Width="292"/>
+        <Rectangle HorizontalAlignment="Left" Height="307" Margin="616,210,0,0" Stroke="Black" VerticalAlignment="Top" Width="260"/>
+
+
+        <Label x:Name="_maj" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#FFD6D6D6" VerticalAlignment="Top" Content="Mise à jour disponible !"/>
+
+        <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Height="44" Width="330" FontSize="36" FontWeight="Bold" Margin="0,43,0,0" Foreground="#FF002233"><Run Language="fr-fr" Text="Moniteur d'activité"/></TextBlock>
+
+
+        <!-- INFO Système  -->
+
+
+        <Label FontSize="22" FontWeight="Bold" HorizontalAlignment="Left" Foreground="#FF002233" Width="250" Margin="10,104,0,0" VerticalAlignment="Top" Height="53">Informations système :</Label>
+
+        <Label Name="_osName" FontSize="14" HorizontalAlignment="Left" Foreground="Black" Width="302" Margin="10,133,0,0" VerticalAlignment="Top" Height="48">OS</Label>
+        <Label x:Name="_osArch" FontSize="14" HorizontalAlignment="Left" Foreground="Black" Width="302" Margin="10,158,0,0" VerticalAlignment="Top" Height="48" Content="OS"/>
+        <Label x:Name="_procName" FontSize="14" HorizontalAlignment="Left" Foreground="Black" Width="468" Margin="408,133,0,0" VerticalAlignment="Top" Height="48" Content="Proc"/>
+        <Label x:Name="_gpuName" FontSize="14" HorizontalAlignment="Left" Foreground="Black" Width="468" Margin="408,157,0,0" VerticalAlignment="Top" Height="48" Content="GPU"/>
+
+        <!-- Module CPU Pourcentage + Aiguille  -->
+
+        <Image HorizontalAlignment="Left" Height="196" Margin="41,225,0,0" VerticalAlignment="Top" Width="199" Source="/compteur_small.png"/>
+        <Image Name="_aiguille" HorizontalAlignment="Left" Height="66" Margin="126,290,0,0" VerticalAlignment="Top" Width="66" Source="/aiguille_small.png" RenderTransformOrigin="0.185,0.829">
+            <Image.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-117.67"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Image.RenderTransform>
+        </Image>
+
+        <Label FontSize="22" FontWeight="Bold" HorizontalAlignment="Left" Foreground="#FF002233" Width="64" Margin="21,211,0,295">CPU</Label>
+        <Label x:Name="_CPU" FontSize="14" HorizontalAlignment="Left" Margin="114,366,0,153" Foreground="#FF223D4C" Width="50" FontWeight="Bold" Content="0,00%"/>
+
+        <!-- Module CPU TEMP  -->
+
+        <Label FontSize="22" FontWeight="Bold" HorizontalAlignment="Left" Foreground="#FF002233" Width="249" Content="TEMPÉRATURE" Margin="21,411,0,94"/>
+        <Label Name="_temp" FontSize="36" FontWeight="Bold" HorizontalAlignment="Left" Foreground="#FF002233" Width="84" Content="N/A" Margin="98,441,0,49"/>
+
+
+
+        <!-- Module RAM -->
+        <Label FontSize="22" FontWeight="Bold" HorizontalAlignment="Left" Foreground="#FF002233" Width="64" Margin="324,211,0,295" Content="RAM"/>
+
+        <Label Name="_ram" FontSize="18" HorizontalAlignment="Center" Foreground="Black" Margin="0,254,0,241" Width="234">Utilisation de la mémoire :</Label>
+
+        <ProgressBar Name="_progressBarMemory" HorizontalAlignment="Center" Height="20" Margin="0,289,0,0" VerticalAlignment="Top" Width="234" Background="#66002233" BorderBrush="Black" Foreground="#FF002233" Value="27" RenderTransformOrigin="1.954,0.476"/>
+
+        <Label Name="_totalMemory" FontSize="18" HorizontalAlignment="Left" Margin="333,343,0,159" Foreground="Black" Width="191" Content="Total : 31.8 GB"/>
+        <Label Name="_useMemory" FontSize="18" HorizontalAlignment="Left" Margin="333,376,0,123" Foreground="Black" Width="212" Content="Utilisé : 8,70 GB"/>
+        <Label Name="_freeMemory" FontSize="18" HorizontalAlignment="Left" Margin="333,415,0,90" Foreground="Black" Width="201"  Content="Libre : 23,1 GB"/>
+
+
+
+
+
+        <!-- Module Disks -->
+        <Label FontSize="22" FontWeight="Bold" HorizontalAlignment="Left" Margin="634,210,0,295" Foreground="#FF002233" Width="146" RenderTransformOrigin="6.855,0.476" Content="DISQUES" />
+
+        <ListBox Name="_listDisk" Margin="634,254,0,210" HorizontalAlignment="Left" Width="222" Background="#FF002233" Foreground="White" d:ItemsSource="{d:SampleData ItemCount=5}"/>
+
+        <!-- Module Network -->
+        <Label FontSize="22" FontWeight="Bold" HorizontalAlignment="Left" Margin="634,376,0,129" Foreground="#FF002233" Width="146" RenderTransformOrigin="6.855,0.476" Content="RÉSEAUX" />
+        <Label FontSize="18" HorizontalAlignment="Left" Margin="635,407,0,98" Foreground="Black" Width="241"  Content="Données transférées :"/>
+        <Label x:Name="_download" FontSize="18" HorizontalAlignment="Left" Margin="642,438,0,65" Foreground="Black" Width="177"  Content=""/>
+        <Label x:Name="_upload" FontSize="18" HorizontalAlignment="Left" Margin="642,480,0,23" Foreground="Black" Width="172"  Content=""/>
+        <Image HorizontalAlignment="Left" Height="37" Margin="819,438,0,0" VerticalAlignment="Top" Width="37" Source="/download.png" RenderTransformOrigin="1.774,-1.621"/>
+        <Image HorizontalAlignment="Left" Height="37" Margin="819,480,0,0" VerticalAlignment="Top" Width="37" Source="/upload.png" RenderTransformOrigin="1.774,-1.621"/>
+
+        <!-- Footer -->
+        <Rectangle HorizontalAlignment="Center" Height="57" Margin="0,526,0,0" Stroke="Black" VerticalAlignment="Top" Width="900" Fill="#FF002233"/>
+        <Label FontSize="14" HorizontalAlignment="Left" Margin="324,528,0,-2" Foreground="White" Width="334"  Content="Copyright 2023 - Valentin FONTAINE"/>
+
+
+
+    </Grid>
+</Window>

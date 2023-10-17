@@ -8,14 +8,27 @@
         Title="Moniteur d'activité" Height="600" Width="900" ResizeMode="NoResize">
     <Grid Background="#33002233">
 
-        <Rectangle HorizontalAlignment="Center" Height="38" Margin="0,1,0,0" VerticalAlignment="Top" Width="900" Fill="#FFFF4740"/>
         <Rectangle HorizontalAlignment="Center" Height="88" Stroke="Black" VerticalAlignment="Top" Width="880" Margin="0,104,0,0"/>
         <Rectangle HorizontalAlignment="Left" Height="307" Margin="10,210,0,0" Stroke="Black" VerticalAlignment="Top" Width="260"/>
         <Rectangle HorizontalAlignment="Center" Height="307" Margin="0,210,0,0" Stroke="Black" VerticalAlignment="Top" Width="292"/>
         <Rectangle HorizontalAlignment="Left" Height="307" Margin="616,210,0,0" Stroke="Black" VerticalAlignment="Top" Width="260"/>
 
+       
+        <TextBlock Panel.ZIndex="999" Margin="344,5,344,480">
+            <TextBlock Height="43" Width="275">
+                <TextBlock.Resources>
+                    <Style TargetType="Hyperlink">
+                        <Setter Property="TextDecorations" Value="None"/>
+                    </Style>
+                </TextBlock.Resources>
+                <Hyperlink NavigateUri="https://github.com/hyover/MonitorActivity" RequestNavigate="Hyperlink_RequestNavigate" FontSize="21" Foreground="White" Cursor="Hand">
+                    Projet Open Source &gt;
+                </Hyperlink>
+            </TextBlock>
+        </TextBlock>
+        <Rectangle HorizontalAlignment="Center" Height="38" Margin="0,1,0,0" VerticalAlignment="Top" Width="900" Fill="#FFFF4740"/>
 
-        <Label x:Name="_maj" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#FFD6D6D6" VerticalAlignment="Top" Content="Mise à jour disponible !"/>
+
 
         <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Height="44" Width="330" FontSize="36" FontWeight="Bold" Margin="0,43,0,0" Foreground="#FF002233"><Run Language="fr-fr" Text="Moniteur d'activité"/></TextBlock>
 

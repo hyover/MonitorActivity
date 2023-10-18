@@ -127,7 +127,7 @@ namespace MonitorActivity
         private void UpdateUsedMemory()
         {
             float usedMemory = _systemInfo.GetTotalPhysicalFloatMemory() - _ramInfo.GetFreeMemoryInGigabytes();
-            _useMemory.Content = $"Used: {usedMemory:F1} GB";
+            _useMemory.Content = $"Utilisée: {usedMemory:F1} GB";
         }
 
         private async Task UpdateNetworkStatsAsync()

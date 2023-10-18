@@ -21,7 +21,7 @@ namespace MonitorActivity
             return await Task.Run(() =>
             {
                 float freeMemoryInGigabytes = GetFreeMemoryInGigabytes();
-                return $"Libre : {freeMemoryInGigabytes:F1} GB";
+                return $"Restant : {freeMemoryInGigabytes:F1} GB";
             });
         }
 

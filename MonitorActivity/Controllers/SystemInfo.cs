@@ -113,7 +113,7 @@ namespace MonitorActivity
                 return (float)totalMemoryInGB;
             }
 
-            return 0; 
+            return 0;
         }
     }
 }

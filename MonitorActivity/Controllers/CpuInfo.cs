@@ -14,7 +14,7 @@ namespace MonitorActivity
 
         public CpuInfo()
         {
-            // Créez le compteur de performance CPU dans le constructeur
+            // Création du compteur de performance CPU dans le constructeur
             cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
 
             // Initialisation de l'objet Computer
@@ -97,7 +97,6 @@ namespace MonitorActivity
 
         public void Dispose()
         {
-            // Ne changez rien ici. Dispose(bool disposing) s'en occupe.
             Dispose(true);
 
             // Suppression du finalizer pour le garbage collector.
@@ -110,10 +109,10 @@ namespace MonitorActivity
             {
                 if (disposing)
                 {
-                    // Libérez les ressources gérées ici, si nécessaire.
+                    // Libération des ressources gérées ici, si nécessaire.
                 }
 
-                // Libérez les ressources non gérées ici.
+                // Libération des ressources non gérées ici.
                 computer.Close();
 
                 disposed = true;

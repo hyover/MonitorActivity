@@ -10,240 +10,143 @@ using System.Windows.Threading;
 
 namespace MonitorActivity
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-
     public partial class MainWindow : Window
     {
+        private const double ANGLE_PER_PERCENTAGE = 2.95;
+        private const double INITIAL_ANGLE = -142;
+        private const int TIMER_INTERVAL_MILLISECONDS = 1000;
 
-        /*
-        * Rotation 0% = -142° / 100% = 53°
-        * Mouvement = 142 + 53 = 295°
-        * 295 / 100 = 2.95 par %
-        */
-        private SystemInfo si = new SystemInfo();
-        DispatcherTimer Timer99 = new DispatcherTimer();
-        DispatcherTimer TimerTemp = new DispatcherTimer();
-
-        private CpuInfo cpu = new CpuInfo();
-        private RamInfo ram = new RamInfo();
-        private DiskInfo disk = new DiskInfo();
-        private NetworkInfos net = new NetworkInfos();
+        private readonly SystemInfo _systemInfo = new SystemInfo();
+        private readonly DispatcherTimer _updateTimer = new DispatcherTimer();
+        private readonly CpuInfo _cpuInfo = new CpuInfo();
+        private readonly RamInfo _ramInfo = new RamInfo();
+        private readonly DiskInfo _diskInfo = new DiskInfo();
+        private readonly NetworkInfos _networkInfo = new NetworkInfos();
 
         public MainWindow()
         {
             InitializeComponent();
-
-            /*
-             * Display OS INFO
-             */
-
-            _osName.Content = si.GetOsInfo("os");
-            _osArch.Content = si.GetOsInfo("arch");
-            _procName.Content = si.GetCpusInfo();
-            _gpuName.Content = si.GetGpuInfo();
-            _totalMemory.Content = si.GetTotalPhysicalMemory();
-
-            /*
-             * Display CPU Pourcentage + CPU TEMP
-             */
-
-            // Initialisation du timer pour le % et l'aiguille
-
-            Timer99.Interval = TimeSpan.FromMilliseconds(1000); // Mettez à jour toutes les 1000 millisecondes
-            Timer99.Tick += Timer99_Tick;
-            Timer99.Start();
-
-
-            // Display RAM INFO
-
-
-            // Display DIK INFO
-            List<string> driveNames = DiskInfo.GetDriveNames(); // Obtenir la liste des noms de disques
-            UpdateDriveList(driveNames); // Mettre à jour la liste des disques
-
-            // Display NETWORK INFO
-
-
-            // END
-            this.Closed += MainWindow_Closed;
-
+            InitializeSystemInfo();
+            InitializeTimers();
+            this.Closed += OnMainWindowClosed;
         }
 
+        private void InitializeSystemInfo()
+        {
+            _osName.Content = _systemInfo.GetOsInfo("os");
+            _osArch.Content = _systemInfo.GetOsInfo("arch");
+            _procName.Content = _systemInfo.GetCpusInfo();
+            _gpuName.Content = _systemInfo.GetGpuInfo();
+            _totalMemory.Content = _systemInfo.GetTotalPhysicalMemory();
+            UpdateDriveList(DiskInfo.GetDriveNames());
+        }
 
+        private void InitializeTimers()
+        {
+            _updateTimer.Interval = TimeSpan.FromMilliseconds(TIMER_INTERVAL_MILLISECONDS);
+            _updateTimer.Tick += UpdateSystemStats;
+            _updateTimer.Start();
+        }
 
-        /*
-         * Minuteur + Get %
-         */
-
-        private async void Timer99_Tick(object sender, EventArgs e)
+        private async void UpdateSystemStats(object sender, EventArgs e)
         {
             try
             {
-                // Get CPU %
-                var cpuUsageString = cpu.GetCurrentCpuUsage();
-                _CPU.Content = cpuUsageString;
-
-                if (double.TryParse(cpuUsageString.TrimEnd('%'), out double cpuUsage))
-                {
-                    UpdateAiguilleRotation(cpuUsage);
-                }
-                else
-                {
-                    Debug.WriteLine("Unable to parse CPU usage.");
-                }
-
-                // Update Temp
-                await UpdateTemperatureAsync();
-
-                // Update RAM
-                UpdateUseMemory();
-                await UpdateProgressBar();
-                await UpdateFreeMemoryAsync();
-
-                // Update Network
-                await UpdateDownloadNetwork();
-                await UpdateUploadNetwork();
+                await RefreshSystemStatsAsync();
             }
             catch (Exception ex)
             {
-                // Here, you can log the exception or show a user-friendly error message.
-                Debug.WriteLine($"Error during Timer99_Tick: {ex.Message}");
+                Debug.WriteLine($"Error during UpdateSystemStats: {ex.Message}");
             }
         }
 
-
-
-
-
-        /*
-         * Update Aiguille
-         */
-
-        private void UpdateAiguilleRotation(double cpuUsage)
+        private async Task RefreshSystemStatsAsync()
         {
-            // Position 0% = -142° / Position 100% = 53°
-            // Movement = 142 + 53 = 295°
-            // 295 / 100 = 2.95° per %
-            double angle = -142 + (cpuUsage * 2.95); // Calculate the angle based on the percentage
+            UpdateCpuStats();
+            await UpdateTemperatureAsync();
+            UpdateMemoryStats();
+            await UpdateNetworkStatsAsync();
+        }
 
-            // Look for the RotateTransform inside the TransformGroup
-            RotateTransform rotateTransform = null;
-            if (_aiguille.RenderTransform is TransformGroup transformGroup)
+        private void UpdateCpuStats()
+        {
+            var cpuUsageString = _cpuInfo.GetCurrentCpuUsage();
+            _CPU.Content = cpuUsageString;
+            Debug.WriteLine(cpuUsageString);
+
+
+            if (double.TryParse(cpuUsageString.TrimEnd('%'), out double cpuUsage))
             {
+                Debug.WriteLine(cpuUsage);
+
+                UpdateNeedleRotation(cpuUsage);
+            }
+            else
+            {
+                Debug.WriteLine("Unable to parse CPU usage.");
+            }
+        }
+
+        private void UpdateNeedleRotation(double cpuUsage)
+        {
+            double angle = INITIAL_ANGLE + (cpuUsage * ANGLE_PER_PERCENTAGE);
+
+            // Obtenez le TransformGroup de l'image
+            var transformGroup = _aiguille.RenderTransform as TransformGroup;
+
+            if (transformGroup != null)
+            {
+                // Trouvez le RotateTransform dans le groupe
                 foreach (var transform in transformGroup.Children)
                 {
-                    if (transform is RotateTransform)
+                    if (transform is RotateTransform rotation)
                     {
-                        rotateTransform = (RotateTransform)transform;
+                        rotation.Angle = angle;
                         break;
                     }
                 }
             }
-
-            if (rotateTransform != null)
-            {
-                // Update the needle rotation
-                rotateTransform.Angle = angle;
-            }
             else
             {
-                // Handle or log the error
-                Debug.WriteLine("RotateTransform not found.");
+                Debug.WriteLine("TransformGroup not found.");
             }
         }
 
 
-        public async Task UpdateTemperatureAsync()
+        private async Task UpdateTemperatureAsync()
         {
-            try
-            {
-                string temperature = await cpu.GetCurrentCpuTemperatureAsync();
-                _temp.Content = temperature;
-            }
-            catch(Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-           
+            _temp.Content = await _cpuInfo.GetCurrentCpuTemperatureAsync();
         }
 
-        public void UpdateUseMemory()
+        private async Task UpdateMemoryStats()
         {
-            float useMemory = si.GetTotalPhysicalFloatMemory() - ram.GetFreeFloatMemory();
-            var result = float.Parse(useMemory.ToString("F1"));
-
-            _useMemory.Content = $"Utilisée : {result} GB";
+            UpdateUsedMemory();
+            _progressBarMemory.Value = await _ramInfo.GetMemoryUsagePercentageAsync();
         }
 
-        public async Task UpdateFreeMemoryAsync()
+        private void UpdateUsedMemory()
         {
-            try
-            {
-                string freeMemory = await ram.GetFreeMemoryAsync();
-                _freeMemory.Content = freeMemory;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
+            float usedMemory = _systemInfo.GetTotalPhysicalFloatMemory() - _ramInfo.GetFreeMemoryInGigabytes();
+            _useMemory.Content = $"Used: {usedMemory:F1} GB";
         }
 
-        public async Task UpdateDownloadNetwork()
+        private async Task UpdateNetworkStatsAsync()
         {
-            try
-            {
-                string downloadNetwork = await net.GetNetworkThroughputDownload();
-                _download.Content = downloadNetwork;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-        }
-      
-
-         public async Task UpdateUploadNetwork()
-        {   
-            try
-            {
-                string uploadNetwork = await net.GetNetworkThroughputUpload();
-                _upload.Content = uploadNetwork;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
+            _download.Content = await _networkInfo.GetNetworkThroughputDownload();
+            _upload.Content = await _networkInfo.GetNetworkThroughputUpload();
         }
 
-        public async Task UpdateProgressBar()
+        private void UpdateDriveList(IEnumerable<string> driveNames)
         {
-            try
-            {
-                // Get memory percentage
-                float memoryPercentage = await ram.GetPurcentMemoryAsync();
-                _progressBarMemory.Value = memoryPercentage; // Mise à jour de la ProgressBar
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-        }
-
-        public void UpdateDriveList(List<string> driveNames)
-        {
-            _listDisk.Items.Clear(); // Effacer les éléments existants dans la liste
-
+            _listDisk.Items.Clear();
             foreach (string driveName in driveNames)
             {
-                _listDisk.Items.Add(driveName); // Ajouter les noms des disques à la liste
+                _listDisk.Items.Add(driveName);
             }
         }
 
-        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        private void OnHyperlinkRequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            // for .NET Core you need to add UseShellExecute = true
             Process.Start(new ProcessStartInfo
             {
                 FileName = e.Uri.AbsoluteUri,
@@ -252,14 +155,11 @@ namespace MonitorActivity
             e.Handled = true;
         }
 
-        private void MainWindow_Closed(object sender, EventArgs e)
+        private void OnMainWindowClosed(object sender, EventArgs e)
         {
-            Timer99.Stop();
-
-            // Libérez les ressources pour l'objet cpu.
-            cpu.Dispose();
-
-            // Ici, vous pouvez libérer d'autres ressources si nécessaire.
+            _updateTimer.Stop();
+            _cpuInfo.Dispose();
         }
     }
 }
+

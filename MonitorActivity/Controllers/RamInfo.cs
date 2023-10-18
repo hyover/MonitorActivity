@@ -5,54 +5,37 @@ namespace MonitorActivity
 {
     class RamInfo
     {
-        private PerformanceCounter _memoryAvailableCounter;
-        private PerformanceCounter _memoryPurcentCounter;
+        private readonly PerformanceCounter _memoryAvailableCounter;
+        private readonly PerformanceCounter _memoryPurcentCounter;
 
         public RamInfo()
         {
-            // Initialisez les compteurs de performance pour la mémoire
+            // Initialisation des compteurs de performance pour la mémoire
             _memoryAvailableCounter = new PerformanceCounter("Memory", "Available MBytes", null); // FREE
             _memoryPurcentCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use", null); // % use
         }
-     
 
-        public async Task<string> GetFreeMemoryAsync()
+        // Cette méthode renvoie la mémoire libre sous forme de chaîne.
+        public async Task<string> GetFormattedFreeMemoryAsync()
         {
             return await Task.Run(() =>
             {
-                float freeMemoryInMegaBytes = _memoryAvailableCounter.NextValue();
-                float freeMemoryInGigabytes = freeMemoryInMegaBytes / 1024; // 1 Go = 1024 Mo
-
-                // Utilisez la méthode ToString avec le format "F1" pour un chiffre après la virgule
-                float freeMemory = float.Parse(freeMemoryInGigabytes.ToString("F1"));
-                var result = freeMemory.ToString();
-                return $"Libre : {result} GB";
+                float freeMemoryInGigabytes = GetFreeMemoryInGigabytes();
+                return $"Libre : {freeMemoryInGigabytes:F1} GB";
             });
         }
 
-        public float GetFreeFloatMemory()
+        // Cette méthode renvoie la mémoire libre sous forme de float.
+        public float GetFreeMemoryInGigabytes()
         {
-           
             float freeMemoryInMegaBytes = _memoryAvailableCounter.NextValue();
-            float freeMemoryInGigabytes = freeMemoryInMegaBytes / 1024; // 1 Go = 1024 Mo
-
-            // Utilisez la méthode ToString avec le format "F1" pour un chiffre après la virgule
-
-            return float.Parse(freeMemoryInGigabytes.ToString("F1"));
-            
+            return freeMemoryInMegaBytes / 1024; // 1 Go = 1024 Mo
         }
 
-
-
-
-        public async Task<float> GetPurcentMemoryAsync()
+        // Cette méthode renvoie le pourcentage d'utilisation de la mémoire sous forme de float.
+        public async Task<double> GetMemoryUsagePercentageAsync()
         {
-            return await Task.Run(() =>
-            {
-                return _memoryPurcentCounter.NextValue();
-            });
+            return await Task.Run(() => _memoryPurcentCounter.NextValue());
         }
-
-
     }
 }

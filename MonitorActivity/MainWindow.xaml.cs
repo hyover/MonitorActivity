@@ -64,7 +64,10 @@ namespace MonitorActivity
             UpdateDriveList(driveNames); // Mettre à jour la liste des disques
 
             // Display NETWORK INFO
-       
+
+
+            // END
+            this.Closed += MainWindow_Closed;
 
         }
 
@@ -76,25 +79,42 @@ namespace MonitorActivity
 
         private async void Timer99_Tick(object sender, EventArgs e)
         {
-            // Get CPU %
-            _CPU.Content = cpu.GetCurrentCpuUsage();
-            // Param rotation de l'aiguille en fonction du pourcentage du CPU
-            double cpuUsage = double.Parse(_CPU.Content.ToString().TrimEnd('%')); // Convertir la chaîne en double
-            // Mettre à l'affichage l'aiguille
-            UpdateAiguilleRotation(cpuUsage);
+            try
+            {
+                // Get CPU %
+                var cpuUsageString = cpu.GetCurrentCpuUsage();
+                _CPU.Content = cpuUsageString;
 
-            // Update Temp
-            await UpdateTemperatureAsync();
+                if (double.TryParse(cpuUsageString.TrimEnd('%'), out double cpuUsage))
+                {
+                    UpdateAiguilleRotation(cpuUsage);
+                }
+                else
+                {
+                    Debug.WriteLine("Unable to parse CPU usage.");
+                }
 
-            // Update RAM
-            UpdateUseMemory();
-            await UpdateProgressBar();
-            await UpdateFreeMemoryAsync();
+                // Update Temp
+                await UpdateTemperatureAsync();
 
-            // Update Network
-            await UpdateDownloadNetwork();
-            await UpdateUploadNetwork();
+                // Update RAM
+                UpdateUseMemory();
+                await UpdateProgressBar();
+                await UpdateFreeMemoryAsync();
+
+                // Update Network
+                await UpdateDownloadNetwork();
+                await UpdateUploadNetwork();
+            }
+            catch (Exception ex)
+            {
+                // Here, you can log the exception or show a user-friendly error message.
+                Debug.WriteLine($"Error during Timer99_Tick: {ex.Message}");
+            }
         }
+
+
+
 
 
         /*
@@ -104,12 +124,11 @@ namespace MonitorActivity
         private void UpdateAiguilleRotation(double cpuUsage)
         {
             // Position 0% = -142° / Position 100% = 53°
-            // Mouvement = 142 + 53 = 295°
-            // 295 / 100 = 2.95° par %
+            // Movement = 142 + 53 = 295°
+            // 295 / 100 = 2.95° per %
+            double angle = -142 + (cpuUsage * 2.95); // Calculate the angle based on the percentage
 
-            double angle = -142 + (cpuUsage * 2.95); // Calcul de l'angle en fonction du pourcentage
-
-            // Recherchez le RotateTransform à l'intérieur du TransformGroup
+            // Look for the RotateTransform inside the TransformGroup
             RotateTransform rotateTransform = null;
             if (_aiguille.RenderTransform is TransformGroup transformGroup)
             {
@@ -125,15 +144,29 @@ namespace MonitorActivity
 
             if (rotateTransform != null)
             {
-                // Mettre à jour la rotation de l'aiguille
+                // Update the needle rotation
                 rotateTransform.Angle = angle;
+            }
+            else
+            {
+                // Handle or log the error
+                Debug.WriteLine("RotateTransform not found.");
             }
         }
 
+
         public async Task UpdateTemperatureAsync()
         {
-            string temperature = await cpu.GetCurrentCpuTemperatureAsync();
-            _temp.Content = temperature;
+            try
+            {
+                string temperature = await cpu.GetCurrentCpuTemperatureAsync();
+                _temp.Content = temperature;
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+           
         }
 
         public void UpdateUseMemory()
@@ -146,28 +179,56 @@ namespace MonitorActivity
 
         public async Task UpdateFreeMemoryAsync()
         {
-            string freeMemory = await ram.GetFreeMemoryAsync();
-            _freeMemory.Content = freeMemory;
+            try
+            {
+                string freeMemory = await ram.GetFreeMemoryAsync();
+                _freeMemory.Content = freeMemory;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         public async Task UpdateDownloadNetwork()
         {
-            string downloadNetwork = await net.GetNetworkThroughputDownload();
-            _download.Content = downloadNetwork;
+            try
+            {
+                string downloadNetwork = await net.GetNetworkThroughputDownload();
+                _download.Content = downloadNetwork;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
       
 
          public async Task UpdateUploadNetwork()
-        {
-            string uploadNetwork = await net.GetNetworkThroughputUpload();
-            _upload.Content = uploadNetwork;
+        {   
+            try
+            {
+                string uploadNetwork = await net.GetNetworkThroughputUpload();
+                _upload.Content = uploadNetwork;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         public async Task UpdateProgressBar()
         {
-            // Get memory percentage
-            float memoryPercentage = await ram.GetPurcentMemoryAsync();
-            _progressBarMemory.Value = memoryPercentage; // Mise à jour de la ProgressBar
+            try
+            {
+                // Get memory percentage
+                float memoryPercentage = await ram.GetPurcentMemoryAsync();
+                _progressBarMemory.Value = memoryPercentage; // Mise à jour de la ProgressBar
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         public void UpdateDriveList(List<string> driveNames)
@@ -191,5 +252,14 @@ namespace MonitorActivity
             e.Handled = true;
         }
 
+        private void MainWindow_Closed(object sender, EventArgs e)
+        {
+            Timer99.Stop();
+
+            // Libérez les ressources pour l'objet cpu.
+            cpu.Dispose();
+
+            // Ici, vous pouvez libérer d'autres ressources si nécessaire.
+        }
     }
 }

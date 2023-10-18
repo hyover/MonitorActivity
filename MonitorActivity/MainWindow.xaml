@@ -6,14 +6,14 @@
         xmlns:local="clr-namespace:MonitorActivity"
         mc:Ignorable="d"
         Title="Moniteur d'activité" Height="600" Width="900" ResizeMode="NoResize">
-    <Grid Background="#33002233">
+    <Grid Background="#33002233" HorizontalAlignment="Center">
 
         <Rectangle HorizontalAlignment="Center" Height="88" Stroke="Black" VerticalAlignment="Top" Width="880" Margin="0,104,0,0"/>
         <Rectangle HorizontalAlignment="Left" Height="307" Margin="10,210,0,0" Stroke="Black" VerticalAlignment="Top" Width="260"/>
         <Rectangle HorizontalAlignment="Center" Height="307" Margin="0,210,0,0" Stroke="Black" VerticalAlignment="Top" Width="292"/>
         <Rectangle HorizontalAlignment="Left" Height="307" Margin="616,210,0,0" Stroke="Black" VerticalAlignment="Top" Width="260"/>
 
-       
+
         <TextBlock Panel.ZIndex="999" Margin="344,5,344,480">
             <TextBlock Height="43" Width="275">
                 <TextBlock.Resources>
@@ -63,7 +63,7 @@
         <!-- Module CPU TEMP  -->
 
         <Label FontSize="22" FontWeight="Bold" HorizontalAlignment="Left" Foreground="#FF002233" Width="249" Content="TEMPÉRATURE" Margin="21,411,0,94"/>
-        <Label Name="_temp" FontSize="36" FontWeight="Bold" HorizontalAlignment="Left" Foreground="#FF002233" Width="84" Content="N/A" Margin="98,441,0,49"/>
+        <Label Name="_temp" FontSize="36" FontWeight="Bold" HorizontalAlignment="Left" Foreground="#FF002233" Width="167" Content="N/A" Margin="87,442,0,48"/>
 
 
 

@@ -1,25 +1,32 @@
-﻿using OpenHardwareMonitor.Hardware;
+﻿using LibreHardwareMonitor.Hardware;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace MonitorActivity
 {
-    class CpuInfo
+    class CpuInfo : IDisposable
     {
         private string lastValidTemperature = "N/A";
-        PerformanceCounter cpuCounter;
+        private readonly PerformanceCounter cpuCounter;
+        private readonly Computer computer;
+        private bool disposed = false; // Pour détecter les appels redondants
 
         public CpuInfo()
         {
             // Créez le compteur de performance CPU dans le constructeur
             cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+
+            // Initialisation de l'objet Computer
+            computer = new Computer { IsCpuEnabled = true };
+            computer.Open();
         }
 
         public string GetCurrentCpuUsage()
         {
-                double cpuUsage = cpuCounter.NextValue();
-                string formattedCpuUsage = cpuUsage.ToString("F2") + "%";
-                return formattedCpuUsage;
+            double cpuUsage = cpuCounter.NextValue();
+            string formattedCpuUsage = cpuUsage.ToString("F2") + "%";
+            return formattedCpuUsage;
         }
 
         public class UpdateVisitor : IVisitor
@@ -28,79 +35,88 @@ namespace MonitorActivity
             {
                 computer.Traverse(this);
             }
+
             public void VisitHardware(IHardware hardware)
             {
-                try
-                {
-                    hardware.Update();
-                    foreach (IHardware subHardware in hardware.SubHardware) subHardware.Accept(this);
-                }
-                catch
-                {
-
-                }
+                hardware.Update();
+                foreach (IHardware subHardware in hardware.SubHardware) subHardware.Accept(this);
             }
+
             public void VisitSensor(ISensor sensor) { }
             public void VisitParameter(IParameter parameter) { }
         }
+
         public async Task<string> GetCurrentCpuTemperatureAsync()
         {
             return await Task.Run(() =>
             {
+                string temperatureString = "N/A";
+                UpdateVisitor updateVisitor = new UpdateVisitor();
+
                 try
                 {
-                    string temperatureString = "N/A";
-
-                    UpdateVisitor updateVisitor = new UpdateVisitor();
-                    Computer computer = new Computer();
-
-                    // Tente d'ouvrir la connexion
-                    computer.Open();
-                   
-                    // Active la surveillance du CPU
-                    computer.CPUEnabled = true;
                     computer.Accept(updateVisitor);
+
+                    Debug.WriteLine(message: $"Total hardware components detected: {computer.Hardware}");
 
                     foreach (var hardware in computer.Hardware)
                     {
-                        if (hardware.HardwareType == HardwareType.CPU)
+                        if (hardware.HardwareType == HardwareType.Cpu)
                         {
-                            try
-                            {
-                                hardware.Update();
-                            }
-                            catch
-                            {
+                            Debug.WriteLine("Hardware is of type CPU.");
 
-                            }
+                            hardware.Update();
+                            Debug.WriteLine($"Total sensors detected for CPU: {hardware.Sensors.Length}");
+
                             foreach (var sensor in hardware.Sensors)
                             {
                                 if (sensor.SensorType == SensorType.Temperature)
                                 {
-                                    if (sensor.Value.HasValue) // Vérifiez si une valeur numérique est disponible
+                                    Debug.WriteLine($"Sensor name: {sensor.Name}, value: {sensor.Value}");
+
+                                    if (sensor.Value.HasValue)
                                     {
-                                        temperatureString = $"{sensor.Value}°C";
-                                        lastValidTemperature = temperatureString; // Stockez la dernière valeur valide
+                                        temperatureString = $"{sensor.Value.Value.ToString("F1")}°C";
+                                        lastValidTemperature = temperatureString;
                                     }
-                                    break;
                                 }
+
                             }
                         }
                     }
-
-                    // Ferme la connexion
-                    computer.Close();
-
-                    return lastValidTemperature;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Gérer l'exception ici (par exemple, journalisation ou affichage d'un message d'erreur)
-                    return lastValidTemperature; // Si une exception se produit, retournez la dernière valeur valide
+                    Debug.WriteLine(ex.Message);
                 }
+
+                return lastValidTemperature;
             });
         }
 
+        public void Dispose()
+        {
+            // Ne changez rien ici. Dispose(bool disposing) s'en occupe.
+            Dispose(true);
 
+            // Suppression du finalizer pour le garbage collector.
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    // Libérez les ressources gérées ici, si nécessaire.
+                }
+
+                // Libérez les ressources non gérées ici.
+                computer.Close();
+
+                disposed = true;
+            }
+        }
     }
 }

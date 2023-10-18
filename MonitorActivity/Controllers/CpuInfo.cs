@@ -57,22 +57,22 @@ namespace MonitorActivity
                 {
                     computer.Accept(updateVisitor);
 
-                    Debug.WriteLine(message: $"Total hardware components detected: {computer.Hardware}");
+                    //Debug.WriteLine(message: $"Total hardware components detected: {computer.Hardware}");
 
                     foreach (var hardware in computer.Hardware)
                     {
                         if (hardware.HardwareType == HardwareType.Cpu)
                         {
-                            Debug.WriteLine("Hardware is of type CPU.");
+                            //Debug.WriteLine("Hardware is of type CPU.");
 
                             hardware.Update();
-                            Debug.WriteLine($"Total sensors detected for CPU: {hardware.Sensors.Length}");
+                            //Debug.WriteLine($"Total sensors detected for CPU: {hardware.Sensors.Length}");
 
                             foreach (var sensor in hardware.Sensors)
                             {
                                 if (sensor.SensorType == SensorType.Temperature)
                                 {
-                                    Debug.WriteLine($"Sensor name: {sensor.Name}, value: {sensor.Value}");
+                                    //Debug.WriteLine($"Sensor name: {sensor.Name}, value: {sensor.Value}");
 
                                     if (sensor.Value.HasValue)
                                     {
@@ -87,7 +87,8 @@ namespace MonitorActivity
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine(ex.Message);
+                    //Debug.WriteLine(ex.Message);
+                    return "N/A";
                 }
 
                 return lastValidTemperature;
